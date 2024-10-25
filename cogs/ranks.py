@@ -3,7 +3,7 @@ from discord.ext import commands
 from collections import defaultdict
 import asyncio
 
-# Ranks dictionary
+# Ranks dict
 ranks = {
     "B": {
         "5": (0, 999),
@@ -54,7 +54,7 @@ class Ranks(commands.Cog):
         try:
             await confirmation.delete()
         except discord.HTTPException:
-            pass  # Ignore if the message is not found
+            pass
 
     @commands.command()
     async def rank(self, ctx, *args):
@@ -115,22 +115,21 @@ class Ranks(commands.Cog):
     @commands.command()
     async def ranklist(self, ctx):
         user_id = ctx.author.id  # Get the unique ID of the user
-        user_inputs = original_inputs[user_id]  # Retrieve the user's original inputs
+        user_inputs = original_inputs[user_id]  # Retrieve user's original inputs to preserve formatting
 
         if not user_inputs:
             await ctx.send("No ranks have been entered yet.")
         else:
-            # Format the ranks into a numbered list
-            ranks_list = "\n".join(f"{index + 1}. {rank}" for index, rank in enumerate(user_inputs))
+            ranks_list = "\n".join(f"{index + 1}. {rank}" for index, rank in enumerate(user_inputs))  # Format the ranks into a numbered list
             await ctx.send(f"**Entered ranks:**\n{ranks_list}")
 
     @commands.command()
     async def delete(self, ctx, index: int):
-        user_id = ctx.author.id  # Get the unique ID of the user
-        user_inputs = original_inputs[user_id]  # Retrieve the user's original inputs
+        user_id = ctx.author.id
+        user_inputs = original_inputs[user_id]  # Retrieve user's original inputs
 
         if index < 1 or index > len(user_inputs):
-            await ctx.send("Invalid index. Please provide a valid rank number.")
+            await ctx.send("Invalid index. Please provide a valid list number.")
             return
 
         removed_rank = user_inputs.pop(index - 1)  # Remove the rank at the specified index
@@ -141,19 +140,19 @@ class Ranks(commands.Cog):
     # Command to clear ranks
     @commands.command()
     async def reset(self, ctx):
-        user_id = ctx.author.id  # Get the unique ID of the user
+        user_id = ctx.author.id
         input_ranks[user_id].clear()  # Clear the user's specific ranks
         original_inputs[user_id].clear()  # Clear the user's specific original inputs
         command_message = ctx.message
-        confirmation = await ctx.send("All your ranks have been cleared.")
+        confirmation = await ctx.send("Your ranks list has been cleared.")
         await self.confirmation_delete(command_message, 5)
         await self.confirmation_delete(confirmation, 10)
    
-    # Example: average rank calculation command
+    # Average calculator command
     @commands.command()
     async def avg(self, ctx):
-        user_id = ctx.author.id  # Get the unique ID of the user
-        user_points = input_ranks[user_id]  # Retrieve the user's points
+        user_id = ctx.author.id
+        user_points = input_ranks[user_id]
 
         if not user_points:  # Check if the list is empty
             await ctx.send("You haven't entered any ranks yet!")
@@ -179,6 +178,6 @@ class Ranks(commands.Cog):
         
         return "Rank not found."
 
-# Setup function to add the cog to the bot
+# Add the cog to the bot
 async def setup(bot):
     await bot.add_cog(Ranks(bot))

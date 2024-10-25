@@ -13,7 +13,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-# Load all cogs in the 'cogs' directory
+# Load cogs in the 'cogs' directory
 async def load_cogs():
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
@@ -23,8 +23,20 @@ async def load_cogs():
             except Exception as e:
                 print(f'Failed to load cog {filename[:-3]}: {e}')
 
+async def confirmation_delete(confirmation: discord.Message, time: int):
+    await asyncio.sleep(time)  # Time in seconds   
+    try:
+        await confirmation.delete()
+    except discord.HTTPException:
+        pass  # Ignore if the message is not found
+
 @bot.event
 async def on_ready():
+    #channel_id = 
+    #channel = bot.get_channel(channel_id)
+    #msg = "snipey has woken up!"
+    #await channel.send(msg)
+    #await confirmation_delete(msg, 10)
     print(f'Logged in as {bot.user.name}')
 
 async def main():
