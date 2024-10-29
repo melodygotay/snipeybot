@@ -629,54 +629,7 @@ class CompTracker(commands.Cog):
         else:
             await ctx.send(f"No picks found for **{full_name}** in series {series_id}.")
 
-    async def pings(self, ctx, team1, team2, when: str = None):
-        notification_channel_id = 1300568326606422086
-        notification_channel = self.bot.get_channel(notification_channel_id)
-
-        if notification_channel is None:
-            print("Notification channel not found. Please check the configuration.")
-            return
-
-        # Get roles (your existing role fetching code)
-        MVP = discord.utils.get(ctx.guild.roles, name="MVP on a Loss FeelsAbzeerMan")
-        BCH = discord.utils.get(ctx.guild.roles, name="Barley's Chewies")
-        TMT = discord.utils.get(ctx.guild.roles, name="Team Two")
-        MRU = discord.utils.get(ctx.guild.roles, name='Memes "R" Us')
-        CTZ = discord.utils.get(ctx.guild.roles, name="Confused Time Zoners")
-        FLO = discord.utils.get(ctx.guild.roles, name="Floccinaucinihilipilification")
-        PBR = discord.utils.get(ctx.guild.roles, name="Peanut Butter Randos")
-        DOH = discord.utils.get(ctx.guild.roles, name="Disciples of the Highlord")
-
-        if when == "next":
-            if (team1 == "mvp" and team2 == "bch") or (
-                team1 == "bch" and team2 == "mvp"):
-                await self.notification_channel.send(f"{BCH.mention}, {MVP.mention}, you're up next!")
-            elif (team1 == "ctz" and team2 == "tmt") or (
-                team1 == "tmt" and team2 == "ctz"):
-                await self.notification_channel.send(f"{CTZ.mention}, {TMT.mention}, you're up next!")
-            elif (team1 == "doh" and team2 == "flo") or (
-                team1 == "flo" and team2 == "doh"):
-                await self.notification_channel.send(f"{DOH.mention}, {FLO.mention}, you're up next!")
-            elif (team1 == "mru" and team2 == "pbr") or (
-                team1 == "pbr" and team2 == "mru"):
-                await self.notification_channel.send(f"{MRU.mention}, {PBR.mention}, you're up next!")
-            else:
-                print("Matchup not found.")
-        elif when == "soon":
-            if (team1 == "mvp" and team2 == "bch") or (
-                team1 == "bch" and team2 == "mvp"):
-                await self.notification_channel.send(f"{BCH.mention}, {MVP.mention}, keep an eye on this channel, your match might abe after this one.")
-            elif (team1 == "ctz" and team2 == "tmt") or (
-                team1 == "tmt" and team2 == "ctz"):
-                await self.notification_channel.send(f"{CTZ.mention}, {TMT.mention}, keep an eye on this channel, your match might abe after this one.")
-            elif (team1 == "doh" and team2 == "flo") or (
-                team1 == "flo" and team2 == "doh"):
-                await self.notification_channel.send(f"{DOH.mention}, {FLO.mention}, keep an eye on this channel, your match might abe after this one.")
-            elif (team1 == "mru" and team2 == "pbr") or (
-                team1 == "pbr" and team2 == "mru"):
-                await self.notification_channel.send(f"{MRU.mention}, {PBR.mention}, keep an eye on this channel, your match might abe after this one.")
-            else:
-                print("Matchup not found.") 
+ 
 
 # Add the cog to the bot
 async def setup(bot):
