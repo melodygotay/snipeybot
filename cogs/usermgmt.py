@@ -19,7 +19,7 @@ class AccountManager(commands.Cog):
         #Scope for sheets & drive
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         #Load credentials from .json file
-        creds = ServiceAccountCredentials.from_json_keyfile_name("", scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name("C:\\Users\\LadyD\\AppData\\Local\\Programs\\Python\\Python312\\Projects\\HotsCalc\\snipey-bfcd3543a260.json", scope)
         client = gspread.authorize(creds) #Authorize client to interact with sheets
         sheet = client.open("Snipey data") # Open specific sheet
         worksheet = sheet.get_worksheet(0) # Access the first worksheet
@@ -36,7 +36,7 @@ class AccountManager(commands.Cog):
 
         today = datetime.now()
 
-        channel_id = 
+        channel_id = 1291010513819668500
         channel = self.bot.get_channel(channel_id)
 
         for index, row in enumerate(self.worksheet.get_all_records()):
