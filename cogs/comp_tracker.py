@@ -82,7 +82,7 @@ class CompTracker(commands.Cog):
         # Scope for sheets & drive
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         # Load credentials from .json file
-        creds = ServiceAccountCredentials.from_json_keyfile_name("C:\\Users\\LadyD\\AppData\\Local\\Programs\\Python\\Python312\\Projects\\HotsCalc\\snipey-bfcd3543a260.json", scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name("json path here", scope)
         client = gspread.authorize(creds)  # Authorize client to interact with sheets
         sheet = client.open("Snipey data")  # Open specific sheet
         worksheet = sheet.get_worksheet(1)  # Access the second worksheet
