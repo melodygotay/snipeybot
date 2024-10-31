@@ -60,7 +60,7 @@ class CompTracker(commands.Cog):
         self.heroes = HEROES
         self.hero_matcher = HeroMatch(HEROES)  # Initialize HeroMatch with the HEROES dictionary 
                                     # my testing channel | my disc (rav-chan) | v comp-tracking
-        self.ALLOWED_CHANNELS_MOD = [1290751062256648212, 1300919680982188103, 1301639621582520320]
+        self.ALLOWED_CHANNELS_MOD = []
 
     @commands.command()
     async def teams(self, ctx: commands.Context):
