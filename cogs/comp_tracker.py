@@ -665,7 +665,7 @@ class CompTracker(commands.Cog):
          
     @commands.command()
     async def alert(self, ctx, team1, team2, when: str = None):
-        notification_channel_id = 922560204787310642 # <- this channel is raviment-general
+        notification_channel_id = 0 # <- this channel is raviment-general
         notification_channel = self.bot.get_channel(notification_channel_id)
         team1, team2 = team1.lower(), team2.lower()
         if notification_channel is None:
