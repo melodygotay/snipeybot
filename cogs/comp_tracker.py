@@ -50,8 +50,7 @@ class HeroMatch:
 # Constants for statuses
 ACTIVE_STATUS = 'Active'
 CLOSED_STATUS = 'Closed'
-EMPTY = ""
-
+EMPTY = ""             
 class CompTracker(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -59,13 +58,15 @@ class CompTracker(commands.Cog):
         self.worksheet = self.sheet
         self.teams = TEAMS
         self.heroes = HEROES
-        self.hero_matcher = HeroMatch(HEROES)  # Initialize HeroMatch with the HEROES dictionary
+        self.hero_matcher = HeroMatch(HEROES)  # Initialize HeroMatch with the HEROES dictionary 
+                                    # my testing channel | my disc (rav-chan) | v comp-tracking
+        self.ALLOWED_CHANNELS_MOD = [1290751062256648212, 1300919680982188103, 1301639621582520320]
 
     @commands.command()
     async def teams(self, ctx: commands.Context):
         embed = discord.Embed(
             title="3k Raviment Teams",
-            description="Use these abbreviations when starting new series'.",
+            description="Use these abbreviations when referencing the teams.",
             color=discord.Color.red()
         )
         embed.add_field(name="", value="**`BCH`:**  Barley's Chewies", inline=False)
@@ -82,7 +83,7 @@ class CompTracker(commands.Cog):
         # Scope for sheets & drive
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         # Load credentials from .json file
-        creds = ServiceAccountCredentials.from_json_keyfile_name("json path here", scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name("C:\\Users\\LadyD\\AppData\\Local\\Programs\\Python\\Python312\\Projects\\HotsCalc\\snipey-bfcd3543a260.json", scope)
         client = gspread.authorize(creds)  # Authorize client to interact with sheets
         sheet = client.open("Snipey data")  # Open specific sheet
         worksheet = sheet.get_worksheet(1)  # Access the second worksheet
@@ -157,12 +158,12 @@ class CompTracker(commands.Cog):
             if row['Series ID'] == series_id:
                 if row['Team 1 Name'] == team_name:
                     # Assuming heroes for Team 1 are stored starting from column 6 (index 5)
-                    if hero_name in [row[col] for col in row.keys() if col.startswith('Team 1 Hero')]:
+                    if hero_name in [row[col] for col in row.keys() if col.startswith('T1 H')]:
                         return False  # Hero has already been picked by this team
 
                 if row['Team 2 Name'] == team_name:
                     # Assuming heroes for Team 2 are stored starting from column 11 (index 10)
-                    if hero_name in [row[col] for col in row.keys() if col.startswith('Team 2 Hero')]:
+                    if hero_name in [row[col] for col in row.keys() if col.startswith('T2 H')]:
                         return False  # Hero has already been picked by this team
         return True
 
@@ -207,6 +208,10 @@ class CompTracker(commands.Cog):
     async def series(self, ctx, series_id: int, team1: str, team2: str):
         global active_series
         global BRACKET
+
+        if ctx.channel.id not in self.ALLOWED_CHANNELS_MOD:
+            await ctx.send(f"{ctx.author.mention}, this command can only be used in `#-comp-tracking`.")
+            return
         
         # Normalize team names to uppercase for consistency
         team1 = team1.upper()
@@ -237,7 +242,7 @@ class CompTracker(commands.Cog):
         if (team1, team2) in active_series:
             await ctx.send(f"A series between **{team1}** and **{team2}** is already active.")
             return
-        
+
         if len(active_series) > 0:
             previous_series_key = next(iter(active_series))  # In case there's more than one series
             del active_series[previous_series_key]  # Remove the previous active series
@@ -276,6 +281,10 @@ class CompTracker(commands.Cog):
     @commands.command()
     async def match(self, ctx, match_id: int):
         global active_series
+        if ctx.channel.id not in self.ALLOWED_CHANNELS_MOD:
+            await ctx.send(f"{ctx.author.mention}, this command can only be used in `#-comp-tracking`.")
+            return
+        
         series_info = None
         previous_match_id = match_id - 1
 
@@ -339,8 +348,9 @@ class CompTracker(commands.Cog):
         print("Match started message sent.")
 
         async def get_team_composition(ctx, team_name): # Helper function to get team compositions
+            full_team_name = self.teams.get(team_name.upper(), team_name)
             while True:
-                await ctx.send(f"Please input the compositions for **{team_name}** (5 heroes, comma-separated):")
+                await ctx.send(f"Please input the hero picks for **{full_team_name} ({team_name})** (5 heroes, comma-separated):")
                 print(f"Waiting for {team_name} input...")
 
                 def check(msg):
@@ -387,12 +397,12 @@ class CompTracker(commands.Cog):
                     for i, hero in enumerate(valid_heroes):
                         self.update_player_pick(series_id, new_match_id, team_name, i, hero)
                     # If everything is valid, send confirmation and return the team composition
-                    await ctx.send(f"**{team_name}**'s composition has been recorded as:\n" + '\n'.join(f"• {hero}" for hero in matched_heroes) +"\nIs this correct? (Yes/No)")
+                    await ctx.send(f"**{full_team_name}**'s composition has been recorded as:\n" + ', '.join(f"**{hero}**" for hero in matched_heroes) +"\n\nIs this correct? (Yes/No)")
                     try:
                         confirmation_msg = await self.bot.wait_for('message', check=check, timeout=30.0)
-                        if confirmation_msg.content.capitalize() == "Yes":
+                        if confirmation_msg.content.capitalize() == "Y" or confirmation_msg.content.capitalize() == "Yes":
                             return matched_heroes
-                        elif confirmation_msg.content.capitalize() == "No":
+                        elif confirmation_msg.content.capitalize() == "N" or confirmation_msg.content.capitalize() == "No":
                             self.clear_team_picks(series_id, new_match_id)
                             continue # Clear heroes and prompt the user again
                         else:
@@ -477,6 +487,10 @@ class CompTracker(commands.Cog):
     @commands.command()
     async def closeseries(self, ctx, series_id: int):
         global active_series
+        if ctx.channel.id not in self.ALLOWED_CHANNELS_MOD:
+            await ctx.send(f"{ctx.author.mention}, this command can only be used in #-comp-tracking.")
+            return
+        
         records = self.worksheet.get_all_records()  # Get all records from the worksheet
         match_found = False  # Track if the match was found
 
@@ -505,11 +519,18 @@ class CompTracker(commands.Cog):
                 except Exception as e:
                     print(f"Failed to update the match status for Match ID {series_id}: {e}")
                     await ctx.send("An error occurred while closing the match. Please try again.")
-        active_series = {}
+
         await ctx.send(f"Closed series between **{full_team1}** and **{full_team2}**.")
+        active_series.clear()
+        print(f"ACTIVE SERIES AFTER SERIES CLOSE {active_series}")
 
         if not match_found:
             await ctx.send(f"No active series found with Series ID {series_id}.")
+    
+    @commands.command()
+    async def clearseries(self,ctx):
+        active_series.clear()
+        print("Active series cleared.")
 
     @commands.command()
     async def closematch(self, ctx, match_id: int):
@@ -531,7 +552,7 @@ class CompTracker(commands.Cog):
                     if updated_row['Match Status'] == CLOSED_STATUS:
                         full_team1 = self.teams.get(team1, team1)
                         full_team2 = self.teams.get(team2, team2)
-                        await ctx.send(f"The composition entry for match {match_id} between **{full_team1}** and **{full_team2}** has been successfully recorded.")
+                        await ctx.send(f"The composition for match {match_id} between **{full_team1}** and **{full_team2}** has been successfully recorded.")
                         match_found = True
                     else:
                         print(f"Warning: Match ID {match_id} status not updated correctly, found: {updated_row['Match Status']}")
@@ -573,63 +594,128 @@ class CompTracker(commands.Cog):
 
         print(f"No match found with Match ID: {match_id}.")  # For debugging
 
-    def get_heroes_for_team_in_series(self, series_id, team_name):
+
+    def get_heroes_for_team_in_tournament(self, team_name):
         # Fetch all records from the Google Sheet
         records = self.worksheet.get_all_records()
 
-        team_picks = {}
+        tournament_picks = {}
 
-        # Loop through the records and find rows with the matching series ID
+        # Loop through all records to find rows matching the team name
         for row in records:
-            if row['Series ID'] == series_id:
-                # Check if the row matches the team name (Team 1 or Team 2)
-                match_id = row['Match ID']  # Assuming each row has a 'Match ID' field
+            series_id = row['Series ID']
+            match_id = row['Match ID']  # Assuming each row has a 'Match ID' field
 
-                if row['Team 1 Name'] == team_name:
-                    heroes = [
-                        row['Team 1 Hero 1'], row['Team 1 Hero 2'], row['Team 1 Hero 3'],
-                        row['Team 1 Hero 4'], row['Team 1 Hero 5']
-                    ]
-                elif row['Team 2 Name'] == team_name:
-                    heroes = [
-                        row['Team 2 Hero 1'], row['Team 2 Hero 2'], row['Team 2 Hero 3'],
-                        row['Team 2 Hero 4'], row['Team 2 Hero 5']
-                    ]
-                else:
-                    continue
+            # Check if the row matches the team name (Team 1 or Team 2)
+            if row['Team 1 Name'] == team_name:
+                heroes = [
+                    row['T1 H1'], row['T1 H2'], row['T1 H3'],
+                    row['T1 H4'], row['T1 H5']
+                ]
+            elif row['Team 2 Name'] == team_name:
+                heroes = [
+                    row['T2 H1'], row['T2 H2'], row['T2 H3'],
+                    row['T2 H4'], row['T2 H5']
+                ]
+            else:
+                continue
 
-                # Filter out empty hero names and store by match ID
-                team_picks[match_id] = [hero for hero in heroes if hero]
+            # Filter out empty hero names
+            heroes = [hero for hero in heroes if hero]
 
-        return team_picks
+            # Initialize nested dictionaries if necessary
+            if series_id not in tournament_picks:
+                tournament_picks[series_id] = {}
+            tournament_picks[series_id][match_id] = heroes
 
+        return tournament_picks
+    
     @commands.command()
-    async def seriespicks(self, ctx, series_id: int, team_name: str):
-        """Display heroes picked by the team, organized by match within the series, in an embed."""
-        
+    async def picks(self, ctx, team_name: str):
+        """Display heroes picked by the team in an embed."""
         full_name = self.teams.get(team_name.upper())
-        picks_by_match = self.get_heroes_for_team_in_series(series_id, team_name.upper())
-
-        if picks_by_match:
+        tournament_picks = self.get_heroes_for_team_in_tournament(team_name.upper())
+        
+        if tournament_picks:
             embed = discord.Embed(
-                title=f"{full_name}'s Heroes in series {series_id}",
+                title=f"Picks for {full_name}",
                 color=discord.Color.red()
             )
-
-            # Add each match's picks as a field in the embed
-            for match_id, heroes in sorted(picks_by_match.items()):
-                formatted_heroes = "\n".join([f"- {hero.title()}" for hero in heroes])
+            
+            # Loop over each series
+            for series_id, picks_by_match in sorted(tournament_picks.items()):
+                # Add a main heading for each series
                 embed.add_field(
-                    name=f"Match {match_id}",
-                    value=formatted_heroes or "No heroes picked",
-                    inline=True
+                    name=f"**- Series {series_id} -**",
+                    value="",
+                    inline=False
                 )
+
+                for match_id, heroes in sorted(picks_by_match.items()):
+                    formatted_heroes = "- "+"\n- ".join([hero.title() for hero in heroes])
+                    embed.add_field(
+                        name=f"Match {match_id}",
+                        value=formatted_heroes,
+                        inline=True  # Inline each match for side-by-side display
+                    )
 
             await ctx.send(embed=embed)
         else:
-            await ctx.send(f"No picks found for **{full_name}** in series {series_id}.")
+            await ctx.send(f"No picks found for **{full_name}** in the tournament.")
+         
+    @commands.command()
+    async def alert(self, ctx, team1, team2, when: str = None):
+        notification_channel_id = 922560204787310642 # <- this channel is raviment-general
+        notification_channel = self.bot.get_channel(notification_channel_id)
+        team1, team2 = team1.lower(), team2.lower()
+        if notification_channel is None:
+            print("Notification channel not found. Please check the configuration.")
+            return
+        # Get roles (your existing role fetching code)
+        MVP = discord.utils.get(ctx.guild.roles, name="MVP on a Loss FeelsAbzeerMan")
+        BCH = discord.utils.get(ctx.guild.roles, name="Barley's Chewies")
+        TMT = discord.utils.get(ctx.guild.roles, name="Team Two")
+        MRU = discord.utils.get(ctx.guild.roles, name='Memes "R" Us')
+        CTZ = discord.utils.get(ctx.guild.roles, name="Confused Time Zoners")
+        FLO = discord.utils.get(ctx.guild.roles, name="Floccinaucinihilipilification")
+        PBR = discord.utils.get(ctx.guild.roles, name="Peanut Butter Randos")
+        DOH = discord.utils.get(ctx.guild.roles, name="Disciples of the Highlord")
 
- 
+        soon_msg = "your match will be starting soon. Keep an eye on this channel as you'll be pinged once it's time to play."
+        next_msg = "your match is up next! Have your captains ready to begin the draft phase soon."
+        
+        if when == "next":
+            if (team1 == "mvp" and team2 == "bch") or (
+                team1 == "bch" and team2 == "mvp"):
+                await notification_channel.send(f"{BCH.mention}, {MVP.mention}, {next_msg}")
+            elif (team1 == "ctz" and team2 == "tmt") or (
+                team1 == "tmt" and team2 == "ctz"):
+                await notification_channel.send(f"{CTZ.mention}, {TMT.mention}, {next_msg}")
+            elif (team1 == "doh" and team2 == "flo") or (
+                team1 == "flo" and team2 == "doh"):
+                await notification_channel.send(f"{DOH.mention}, {FLO.mention}, {next_msg}")
+            elif (team1 == "mru" and team2 == "pbr") or (
+                team1 == "pbr" and team2 == "mru"):
+                await notification_channel.send(f"{MRU.mention}, {PBR.mention}, {next_msg}")
+            else:
+                print("Matchup not found.")
+        elif when == "soon":
+            if (team1 == "mvp" and team2 == "bch") or (
+                team1 == "bch" and team2 == "mvp"):
+                await notification_channel.send(f"{BCH.mention}, {MVP.mention}, {soon_msg}")
+            elif (team1 == "ctz" and team2 == "tmt") or (
+                team1 == "tmt" and team2 == "ctz"):
+                await notification_channel.send(f"{CTZ.mention}, {TMT.mention}, {soon_msg}")
+            elif (team1 == "doh" and team2 == "flo") or (
+                team1 == "flo" and team2 == "doh"):
+                await notification_channel.send(f"{DOH.mention}, {FLO.mention}, {soon_msg}")
+            elif (team1 == "mru" and team2 == "pbr") or (
+                team1 == "pbr" and team2 == "mru"):
+                await notification_channel.send(f"{MRU.mention}, {PBR.mention}, {soon_msg}")
+            else:
+                print("Matchup not found.") 
+
+        #FINISH THIS
 
 # Add the cog to the bot
 async def setup(bot):
