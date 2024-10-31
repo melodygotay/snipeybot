@@ -16,7 +16,7 @@ class TournamentHelper(commands.Cog):
         self.rounds = ["Quarterfinals", "Semifinals", "Finals"]
         self.teams = TEAMS
                                         # my testing channel | drafting channel
-        self.ALLOWED_CHANNELS_CAPTAINS = [1290751062256648212, 1300568326606422086]
+        self.ALLOWED_CHANNELS_CAPTAINS = []
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -474,8 +474,6 @@ class BracketView(discord.ui.View):
         await interaction.response.defer()  # Acknowledge interaction without sending a response
 
 async def setup(bot):
-    # Initialize MatchReporting first
-    match_reporting = MatchReporting(bot)
-    await bot.add_cog(match_reporting)
+    await bot.add_cog(MatchReporting(bot))
     await bot.add_cog(TournamentHelper(bot))
     await bot.add_cog(BanPhase(bot))
